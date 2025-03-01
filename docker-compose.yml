@@ -1,0 +1,27 @@
+services:
+    db:
+        container_name: dbPruebaTecnica
+        image: postgres:15
+        volumes:
+            - postgres-data-test:/var/lib/postgresql/data
+        ports:
+            - "5432:5432"
+        restart: always
+        environment:
+            POSTGRES_PASSWORD: ${PG_PASSWORD}
+    
+    pgadmin:
+        depends_on:
+            - db
+        container_name: pgAdminPrueba
+        image: dpage/pgadmin4:8.12
+        volumes:
+            - pg-data-test:/var/lib/pgadmin
+        ports:
+            - "8080:80"
+        environment:
+            PGADMIN_DEFAULT_PASSWORD: ${PG_PASSWORD}
+            PGADMIN_DEFAULT_EMAIL: ${PG_EMAIL}
+volumes:
+    postgres-data-test:
+    pg-data-test:
