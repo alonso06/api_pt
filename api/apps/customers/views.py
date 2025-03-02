@@ -1,57 +1,47 @@
-from rest_framework import generics
-from rest_framework.response import Response
-from django.shortcuts import (get_object_or_404,
-                              get_list_or_404)
-from models import (Customer as CustomerModel, 
+from rest_framework import (viewsets,
+                            status) 
+from rest_framework.decorators import action 
+from rest_framework.response import Response 
+from .models import (Customer as CustomerModel, 
                     CustomerType as CustomerTypeModel )
-from serializers import (CustomerTypeSerializer, CustomerSerializer)
+from .serializers import (CustomerTypeSerializer, CustomerSerializer)
 
-
-class BaseView(generics.GenericAPIView):
+class CustomerTypeLView(viewsets.ModelViewSet):
+    queryset=CustomerTypeModel.objects.all()
+    serializer_class=CustomerTypeSerializer
     
-    # TODO:implementar token de authe
-    
-    queryset = None
-    serializer_class = None
-    
-    def get_by_id(self,
-                  id:int):
-        obj = get_object_or_404(self.queryset,id)
-        serializer_obj = self.serializer_class(obj) #type: ignore
-        return Response(serializer_obj.data)
-
-    def get_all(self):
-        obj = get_list_or_404(self.queryset)
-        serializer_obj = self.serializer_class(obj) #type: ignore
-        return Response(serializer_obj.data)
-    
-    def save(self, 
-             request:dict):
-        serializer_obj = self.serializer_class(request.data) # type: ignore
-        if serializer_obj.is_valid(): # type: ignore
-            serializer_obj.save() # type: ignore
-            return Response(serializer_obj.data, status=201)
-        
-        return Response(serializer_obj.errors, status=400) 
-         
-    def update(self,
-               id:int,
-               request:dict):
-        obj = get_object_or_404(self.queryset,id)
-        update_serializer_obj = self.serializer_class(obj,
-                                                      request) #type: ignore
-        if update_serializer_obj.is_valid(): # type: ignore
-            update_serializer_obj.save() # type: ignore
-            return Response(update_serializer_obj.data, status=201)
-        return Response(update_serializer_obj.errors, status=400) 
-    def delete(self,
-               id:int):
-        obj = get_object_or_404(self.queryset,id)
-        obj.delete()
-        return Response({'message':'Usuario eliminado'},
-                        status=204)
+    @action(detail=True, methods=['patch'])
+    def unsubscribe(self,
+                    request,
+                    pk=None):
+        return unsubscribe_service(self,
+                            request,
+                            pk)
         
 
-class CustomerTypeView(BaseView):
-    queryset = CustomerModel.objects.all()
-    serializer_class = CustomerTypeSerializer
+class CustomerView(viewsets.ModelViewSet):
+    queryset=CustomerModel.objects.all()
+    serializer_class=CustomerSerializer
+    
+    @action(detail=True, methods=['patch'])
+    def unsubscribe(self,
+                    request,
+                    pk=None):
+        return unsubscribe_service(self,
+                            request,
+                            pk)
+        
+
+def unsubscribe_service(self,
+                    request,
+                    pk=None):
+        obj = self.get_object() #type:ignore
+        
+        if not obj.state:
+            return Response({'message': 'Ya dado de baja'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        obj.state = False
+        obj.save()
+        
+        return Response({'message': 'Dado de baja'},
+                            status=status.HTTP_200_OK)

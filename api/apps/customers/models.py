@@ -1,8 +1,8 @@
 from django.db import models #type: ignore
 
 class Gender(models.TextChoices):
-    MALE    =   'M'
-    FEMALE  =   'F'
+    MASCULINO    =   'M'
+    FEMENINO  =   'F'
 
 class CustomerType(models.Model):
     
@@ -10,7 +10,8 @@ class CustomerType(models.Model):
     name            = models.CharField(max_length=12)
     state           = models.BooleanField(default=True)
     created_date    = models.DateTimeField(auto_now_add=True)
-    updated_date    = models.DateTimeField(null=True, default=None)
+    updated_date    = models.DateTimeField(null=True, 
+                                           auto_now=True)
     
     class Meta:
         db_table = "customer_type"        
@@ -25,7 +26,8 @@ class Customer(models.Model):
     state           =   models.BooleanField(default=True)
     birthdate       =   models.DateField(null=True, default=None)
     created_date    =   models.DateTimeField(auto_now_add=True)
-    updated_date    =   models.DateTimeField(null=True, default=None)
+    updated_date    =   models.DateTimeField(null=True, 
+                                             auto_now=True)
     customer_type_id    =   models.ForeignKey(CustomerType, 
                                           on_delete=models.CASCADE)
     class Meta:
