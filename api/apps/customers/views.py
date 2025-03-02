@@ -1,15 +1,29 @@
+from django.db.models import ProtectedError
 from rest_framework import (viewsets,
                             status) 
 from rest_framework.decorators import action 
 from rest_framework.response import Response 
 from .models import (Customer as CustomerModel, 
                     CustomerType as CustomerTypeModel )
-from .serializers import (CustomerTypeSerializer, CustomerSerializer)
+from .serializers import (CustomerTypeSerializer, 
+                          CustomerSerializer)
+
+from api.exceptions import ProtectedDeletionException
+from api.services import unsubscribe_service
 
 class CustomerTypeLView(viewsets.ModelViewSet):
     queryset=CustomerTypeModel.objects.all()
     serializer_class=CustomerTypeSerializer
     
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        try:
+            self.perform_destroy(instance)
+        except ProtectedError:
+            raise ProtectedDeletionException()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+        
     @action(detail=True, methods=['patch'])
     def unsubscribe(self,
                     request,
@@ -23,6 +37,12 @@ class CustomerView(viewsets.ModelViewSet):
     queryset=CustomerModel.objects.all()
     serializer_class=CustomerSerializer
     
+    def get_queryset(self):
+        name = self.request.query_params.get('name') #type: ignore
+        if name:
+            return self.queryset.filter(first_name__icontains=name)
+        return self.queryset
+    
     @action(detail=True, methods=['patch'])
     def unsubscribe(self,
                     request,
@@ -32,16 +52,7 @@ class CustomerView(viewsets.ModelViewSet):
                             pk)
         
 
-def unsubscribe_service(self,
-                    request,
-                    pk=None):
-        obj = self.get_object() #type:ignore
+
         
-        if not obj.state:
-            return Response({'message': 'Ya dado de baja'},
-                            status=status.HTTP_400_BAD_REQUEST)
-        obj.state = False
-        obj.save()
         
-        return Response({'message': 'Dado de baja'},
-                            status=status.HTTP_200_OK)
+

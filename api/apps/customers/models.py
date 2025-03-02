@@ -7,7 +7,8 @@ class Gender(models.TextChoices):
 class CustomerType(models.Model):
     
     # id default pk 
-    name            = models.CharField(max_length=12)
+    name            = models.CharField(max_length=12, 
+                                       unique=True)
     state           = models.BooleanField(default=True)
     created_date    = models.DateTimeField(auto_now_add=True)
     updated_date    = models.DateTimeField(null=True, 
@@ -29,6 +30,6 @@ class Customer(models.Model):
     updated_date    =   models.DateTimeField(null=True, 
                                              auto_now=True)
     customer_type_id    =   models.ForeignKey(CustomerType, 
-                                          on_delete=models.CASCADE)
+                                          on_delete=models.PROTECT)
     class Meta:
         db_table = "customer"  
