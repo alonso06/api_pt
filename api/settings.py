@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'api.apps.users'
+    'api.apps.customers'
 ]
 
 MIDDLEWARE = [
@@ -84,8 +84,8 @@ DATABASES = {
     'default': {
         'ENGINE': env('DB_ENGINE'),
         'NAME': env('DB_NAME'),
-        'USER': env('DB_USER'),
-        'PASSWORD': env('DB_PASSWORD'),
+        'USER': env('PG_USER'),
+        'PASSWORD': env('PG_PASSWORD'),
         'HOST': env('DB_HOST'),
         'PORT': env('DB_PORT')
     }
